@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Mail, LogIn, CheckCircle2, Lock } from "lucide-react";
+import { Car, Mail, CheckCircle2, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -38,19 +38,8 @@ export default function LoginPage() {
 
   const redirectTo =
     typeof window !== "undefined"
-      ? `${window.location.origin}/auth/callback`
+      ? `${window.location.origin}/auth/confirm`
       : undefined;
-
-  async function signInWithGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
-    });
-    if (error) {
-      setStatus("error");
-      setMessage(error.message);
-    }
-  }
 
   async function signInWithMagicLink(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +54,7 @@ export default function LoginPage() {
       setMessage(error.message);
     } else {
       setStatus("sent");
-      setMessage("Check your inbox for the magic link.");
+      setMessage("Check your inbox for the sign-in link.");
     }
   }
 
@@ -131,41 +120,21 @@ export default function LoginPage() {
           <span className="h-px flex-1 bg-base-700" />
         </div>
 
-        <button onClick={signInWithGoogle} className="btn-ghost w-full">
-          <LogIn size={18} />
-          Continue with Google
-        </button>
-
-        <div className="my-4 flex items-center gap-3 text-xs text-slate-500">
-          <span className="h-px flex-1 bg-base-700" />
-          OR
-          <span className="h-px flex-1 bg-base-700" />
-        </div>
-
         <form onSubmit={signInWithMagicLink} className="space-y-3">
-          <div>
-            <label className="label" htmlFor="email">
-              Email magic link
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="input"
-            />
-          </div>
+          <p className="text-xs text-slate-400">
+            Prefer no password? Get a one-time sign-in link by email.
+          </p>
           <button
             type="submit"
-            disabled={status === "sending"}
+            disabled={status === "sending" || !email}
             className="btn-ghost w-full"
           >
             <Mail size={18} />
-            {status === "sending" ? "Sending…" : "Send magic link"}
+            {status === "sending" ? "Sending…" : "Email me a sign-in link"}
           </button>
+          <p className="text-center text-[11px] text-slate-500">
+            Open the link on this same device for the smoothest sign-in.
+          </p>
         </form>
 
         {status === "sent" && (
