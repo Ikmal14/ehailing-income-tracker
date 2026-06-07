@@ -80,10 +80,15 @@ Push to GitHub and import the repo in Vercel (Hobby tier). The framework preset 
 
 ## ⏰ Cron keep-alive (prevents Supabase free-tier pause)
 
-Supabase pauses a free project after **7 days** of inactivity. [`vercel.json`](vercel.json) registers a Vercel Cron job that pings the database every **5 days**:
+Supabase pauses a free project after **7 days** of inactivity. [`vercel.ts`](vercel.ts) (the typed successor to `vercel.json`) registers a Vercel Cron job that pings the database every **5 days**:
 
-```json
-{ "crons": [{ "path": "/api/cron/keep-alive", "schedule": "0 0 */5 * *" }] }
+```ts
+import { type VercelConfig } from "@vercel/config/v1";
+
+export const config: VercelConfig = {
+  framework: "nextjs",
+  crons: [{ path: "/api/cron/keep-alive", schedule: "0 0 */5 * *" }],
+};
 ```
 
 The endpoint [`/api/cron/keep-alive`](app/api/cron/keep-alive/route.ts) runs a lightweight count-only query (equivalent to `SELECT 1`).
@@ -98,9 +103,13 @@ The endpoint [`/api/cron/keep-alive`](app/api/cron/keep-alive/route.ts) runs a l
 
 ```bash
 npm install
-npm run dev
-# http://localhost:3000
+npm run dev          # http://localhost:3000
+npm test             # run the BUDI95 quota / costing unit tests (Vitest)
 ```
+
+Seed realistic test data: after signing in once, run [`supabase/seed.sql`](supabase/seed.sql)
+in the Supabase SQL Editor (it targets your most recent `auth.users` row and is
+idempotent).
 
 ---
 
