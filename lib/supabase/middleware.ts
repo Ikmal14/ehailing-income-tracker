@@ -48,6 +48,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // A user who must change their password is forced to /update-password before
+  // they can reach any app route (including /login -> they've just authed).
+  if (
+    user &&
+    user.user_metadata?.must_change_password === true &&
+    pathname !== "/update-password" &&
+    !pathname.startsWith("/auth") &&
+    !pathname.startsWith("/api")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/update-password";
+    return NextResponse.redirect(url);
+  }
+
   if (user && pathname.startsWith("/login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";

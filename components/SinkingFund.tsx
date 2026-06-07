@@ -25,9 +25,9 @@ export default function SinkingFund({
 
   return (
     <div className="card">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <SectionTitle icon={<Gauge size={20} />}>Sinking Fund</SectionTitle>
-        <span className="text-xs text-slate-400">
+        <span className="shrink-0 whitespace-nowrap text-xs text-slate-400">
           Odometer: <span className="font-semibold text-slate-200">{km(odo)}</span>
         </span>
       </div>
@@ -41,12 +41,12 @@ export default function SinkingFund({
               : "brand";
           return (
             <div key={p.milestone.key}>
-              <div className="mb-1 flex items-center justify-between">
-                <span className="flex items-center gap-2 text-sm text-slate-200">
-                  <span className="text-brand">{ICONS[p.milestone.key]}</span>
-                  {p.milestone.label}
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-2 text-sm text-slate-200">
+                  <span className="shrink-0 text-brand">{ICONS[p.milestone.key]}</span>
+                  <span className="min-w-0 break-words">{p.milestone.label}</span>
                 </span>
-                <span className="text-xs font-semibold text-slate-300">
+                <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-slate-300">
                   {rm(p.milestone.cost)}
                 </span>
               </div>

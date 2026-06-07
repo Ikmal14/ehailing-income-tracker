@@ -33,13 +33,13 @@ export default function QuotaWidget({
       <ProgressBar ratio={q.usedRatio} tone={tone} />
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
-        <div>
+        <div className="min-w-0 break-words">
           Quota tier from last month:
           <span className="ml-1 font-semibold text-slate-200">
             {km(q.prevMonthDistanceKm)}
           </span>
         </div>
-        <div className="text-right">
+        <div className="min-w-0 break-words text-right">
           Remaining:
           <span className="ml-1 font-semibold text-slate-200">
             {liters(q.remainingLiters)}
@@ -48,7 +48,7 @@ export default function QuotaWidget({
       </div>
 
       <div
-        className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs ${
+        className={`mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 break-words rounded-xl px-3 py-2 text-xs ${
           q.exceeded
             ? "bg-red-500/10 text-red-300"
             : "bg-brand/10 text-brand"

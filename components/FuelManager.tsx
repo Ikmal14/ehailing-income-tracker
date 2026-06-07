@@ -20,7 +20,7 @@ export default function FuelManager({ fuelLogs }: { fuelLogs: FuelLog[] }) {
       <SectionTitle icon={<Fuel size={20} />}>Fuel Logs</SectionTitle>
 
       <form action={addFuelLog} className="space-y-3">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="fuel_date">
               Date
@@ -60,22 +60,23 @@ export default function FuelManager({ fuelLogs }: { fuelLogs: FuelLog[] }) {
       {recent.length > 0 && (
         <ul className="mt-4 divide-y divide-base-700">
           {recent.map((f) => (
-            <li key={f.id} className="flex items-center justify-between py-2 text-sm">
-              <div>
-                <div className="text-slate-200">
+            <li key={f.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+              <div className="min-w-0">
+                <div className="truncate text-slate-200">
                   {liters(f.liters_pumped)} · {rm(f.total_cost)}
                 </div>
                 <div className="text-xs text-slate-400">
                   {new Date(f.date).toLocaleDateString("en-MY", {
+                    timeZone: "Asia/Kuala_Lumpur",
                     day: "2-digit",
                     month: "short",
                   })}{" "}
                   @ {km(f.odometer)}
                 </div>
               </div>
-              <form action={deleteFuelLog}>
+              <form action={deleteFuelLog} className="shrink-0">
                 <input type="hidden" name="id" value={f.id} />
-                <button className="text-slate-500 hover:text-red-400" aria-label="Delete fuel log">
+                <button className="-mr-1 rounded-lg p-2 text-slate-500 hover:text-red-400" aria-label="Delete fuel log">
                   <Trash2 size={16} />
                 </button>
               </form>

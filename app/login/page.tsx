@@ -1,16 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Car, Mail, LogIn, CheckCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Car, Mail, LogIn, CheckCircle2, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
   const [message, setMessage] = useState("");
+
+  async function signInWithPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) return;
+    setSigningIn(true);
+    setStatus("idle");
+    setMessage("");
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      setSigningIn(false);
+      setStatus("error");
+      setMessage(error.message);
+      return;
+    }
+    router.refresh();
+    router.push("/");
+  }
 
   const redirectTo =
     typeof window !== "undefined"
@@ -34,7 +58,7 @@ export default function LoginPage() {
     setStatus("sending");
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: redirectTo },
+      options: { emailRedirectTo: redirectTo, shouldCreateUser: false },
     });
     if (error) {
       setStatus("error");
@@ -60,7 +84,54 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <button onClick={signInWithGoogle} className="btn-primary w-full">
+        <form onSubmit={signInWithPassword} className="space-y-3">
+          <div>
+            <label className="label" htmlFor="signin-email">
+              Email
+            </label>
+            <input
+              id="signin-email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="signin-password">
+              Password
+            </label>
+            <input
+              id="signin-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="input"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={signingIn}
+            className="btn-primary w-full"
+          >
+            <Lock size={18} />
+            {signingIn ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+
+        <div className="my-4 flex items-center gap-3 text-xs text-slate-500">
+          <span className="h-px flex-1 bg-base-700" />
+          OR
+          <span className="h-px flex-1 bg-base-700" />
+        </div>
+
+        <button onClick={signInWithGoogle} className="btn-ghost w-full">
           <LogIn size={18} />
           Continue with Google
         </button>

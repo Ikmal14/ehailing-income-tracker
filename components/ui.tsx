@@ -39,11 +39,11 @@ export function StatCard({
 }) {
   return (
     <div className="card">
-      <div className="flex items-start justify-between">
-        <span className="label">{label}</span>
-        {icon && <span className="text-slate-500">{icon}</span>}
+      <div className="flex items-start justify-between gap-1">
+        <span className="label min-w-0">{label}</span>
+        {icon && <span className="shrink-0 text-slate-500">{icon}</span>}
       </div>
-      <div className="text-2xl font-bold text-slate-100">{value}</div>
+      <div className="break-words text-xl font-bold text-slate-100 lg:text-2xl">{value}</div>
       {sub && <div className="mt-1 text-xs text-slate-400">{sub}</div>}
     </div>
   );

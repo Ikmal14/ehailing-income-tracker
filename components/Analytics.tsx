@@ -85,8 +85,8 @@ export default function Analytics({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={heatmap} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickMargin={4} />
+              <YAxis stroke="#64748b" fontSize={11} width={36} />
               <Tooltip
                 cursor={{ fill: "#1e293b55" }}
                 contentStyle={{

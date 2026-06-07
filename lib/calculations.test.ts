@@ -21,16 +21,16 @@ import {
 } from "./constants";
 import type { FuelLog, MaintenanceLog, Shift } from "./types";
 
-/* Fixed reference date: 15 June 2026 (a Monday), local time. */
-const REF = new Date(2026, 5, 15, 12, 0, 0);
+/* Fixed reference date: 15 June 2026 (a Monday), Malaysia time. */
+const REF = new Date("2026-06-15T12:00:00+08:00");
 
 function makeShift(partial: Partial<Shift>): Shift {
   return {
     id: crypto.randomUUID(),
     user_id: "u1",
     created_at: new Date().toISOString(),
-    shift_start: new Date(2026, 5, 2, 8, 0, 0).toISOString(),
-    shift_end: new Date(2026, 5, 2, 16, 0, 0).toISOString(),
+    shift_start: "2026-06-02T08:00:00+08:00",
+    shift_end: "2026-06-02T16:00:00+08:00",
     start_mileage: 30000,
     end_mileage: 30100,
     earnings: {
@@ -46,7 +46,7 @@ function makeFuel(partial: Partial<FuelLog>): FuelLog {
   return {
     id: crypto.randomUUID(),
     user_id: "u1",
-    date: new Date(2026, 5, 5).toISOString(),
+    date: "2026-06-05T00:00:00+08:00",
     odometer: 30500,
     liters_pumped: 30,
     total_cost: 59.7,
@@ -86,13 +86,13 @@ describe("APAD BUDI95 tiered quota", () => {
     const shifts = [
       // May (previous month): 3000 km
       makeShift({
-        shift_start: new Date(2026, 4, 10, 8).toISOString(),
+        shift_start: "2026-05-10T08:00:00+08:00",
         start_mileage: 0,
         end_mileage: 3000,
       }),
       // June (current month): should be excluded
       makeShift({
-        shift_start: new Date(2026, 5, 10, 8).toISOString(),
+        shift_start: "2026-06-10T08:00:00+08:00",
         start_mileage: 3000,
         end_mileage: 4000,
       }),
@@ -102,9 +102,9 @@ describe("APAD BUDI95 tiered quota", () => {
 
   it("sums only current-month litres pumped", () => {
     const logs = [
-      makeFuel({ date: new Date(2026, 5, 3).toISOString(), liters_pumped: 35 }),
-      makeFuel({ date: new Date(2026, 5, 20).toISOString(), liters_pumped: 40 }),
-      makeFuel({ date: new Date(2026, 4, 28).toISOString(), liters_pumped: 99 }), // May -> excluded
+      makeFuel({ date: "2026-06-03T00:00:00+08:00", liters_pumped: 35 }),
+      makeFuel({ date: "2026-06-20T00:00:00+08:00", liters_pumped: 40 }),
+      makeFuel({ date: "2026-05-28T00:00:00+08:00", liters_pumped: 99 }), // May -> excluded
     ];
     expect(currentMonthLitersPumped(logs, REF)).toBe(75);
   });
@@ -112,12 +112,12 @@ describe("APAD BUDI95 tiered quota", () => {
   it("selects 600 L quota and reports usage status", () => {
     const shifts = [
       makeShift({
-        shift_start: new Date(2026, 4, 10, 8).toISOString(),
+        shift_start: "2026-05-10T08:00:00+08:00",
         start_mileage: 0,
         end_mileage: 3000, // -> 600 L tier
       }),
     ];
-    const logs = [makeFuel({ date: new Date(2026, 5, 3).toISOString(), liters_pumped: 150 })];
+    const logs = [makeFuel({ date: "2026-06-03T00:00:00+08:00", liters_pumped: 150 })];
     const q = quotaStatus(shifts, logs, REF);
     expect(q.quotaLiters).toBe(600);
     expect(q.usedLiters).toBe(150);
@@ -129,13 +129,13 @@ describe("APAD BUDI95 tiered quota", () => {
   it("switches to floating rate once quota is exceeded", () => {
     const shifts = [
       makeShift({
-        shift_start: new Date(2026, 4, 10, 8).toISOString(),
+        shift_start: "2026-05-10T08:00:00+08:00",
         start_mileage: 0,
         end_mileage: 1000, // -> 200 L tier
       }),
     ];
-    const within = [makeFuel({ date: new Date(2026, 5, 3).toISOString(), liters_pumped: 100 })];
-    const over = [makeFuel({ date: new Date(2026, 5, 3).toISOString(), liters_pumped: 250 })];
+    const within = [makeFuel({ date: "2026-06-03T00:00:00+08:00", liters_pumped: 100 })];
+    const over = [makeFuel({ date: "2026-06-03T00:00:00+08:00", liters_pumped: 250 })];
 
     expect(effectiveFuelRate(shifts, within, 2.6, REF)).toBe(SUBSIDISED_FUEL_RATE);
     expect(effectiveFuelRate(shifts, over, 2.6, REF)).toBe(2.6);
@@ -161,8 +161,8 @@ describe("financials", () => {
   it("aggregates hourly rates over closed shifts only", () => {
     const shifts = [
       makeShift({
-        shift_start: new Date(2026, 5, 2, 8).toISOString(),
-        shift_end: new Date(2026, 5, 2, 12).toISOString(), // 4h
+        shift_start: "2026-06-02T08:00:00+08:00",
+        shift_end: "2026-06-02T12:00:00+08:00", // 4h
         start_mileage: 0,
         end_mileage: 100,
         earnings: { platforms: { Grab: 100 }, cash_vs_wallet: { cash: 0, wallet: 0 } },
@@ -178,10 +178,10 @@ describe("financials", () => {
 
 describe("time block classification", () => {
   it("buckets by start hour", () => {
-    expect(timeBlockOf(makeShift({ shift_start: new Date(2026, 5, 2, 7).toISOString() }))).toBe("morning");
-    expect(timeBlockOf(makeShift({ shift_start: new Date(2026, 5, 2, 14).toISOString() }))).toBe("afternoon");
-    expect(timeBlockOf(makeShift({ shift_start: new Date(2026, 5, 2, 22).toISOString() }))).toBe("night");
-    expect(timeBlockOf(makeShift({ shift_start: new Date(2026, 5, 2, 3).toISOString() }))).toBe("night");
+    expect(timeBlockOf(makeShift({ shift_start: "2026-06-02T07:00:00+08:00" }))).toBe("morning");
+    expect(timeBlockOf(makeShift({ shift_start: "2026-06-02T14:00:00+08:00" }))).toBe("afternoon");
+    expect(timeBlockOf(makeShift({ shift_start: "2026-06-02T22:00:00+08:00" }))).toBe("night");
+    expect(timeBlockOf(makeShift({ shift_start: "2026-06-02T03:00:00+08:00" }))).toBe("night");
   });
 });
 
@@ -201,7 +201,7 @@ describe("milestones & odometer", () => {
       {
         id: "m1",
         user_id: "u1",
-        date: new Date(2026, 0, 1).toISOString(),
+        date: "2026-01-01T00:00:00+08:00",
         part_name: "Battery",
         replaced_at_odometer: 32000,
         cost: 320,

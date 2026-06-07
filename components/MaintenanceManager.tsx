@@ -45,8 +45,8 @@ export default function MaintenanceManager({
             <option value="Brake Pads" />
           </datalist>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          <div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1">
             <label className="label" htmlFor="maint_date">
               Date
             </label>
@@ -79,13 +79,14 @@ export default function MaintenanceManager({
       {recent.length > 0 && (
         <ul className="mt-4 divide-y divide-base-700">
           {recent.map((m) => (
-            <li key={m.id} className="flex items-center justify-between py-2 text-sm">
-              <div>
-                <div className="text-slate-200">
+            <li key={m.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+              <div className="min-w-0">
+                <div className="truncate text-slate-200">
                   {m.part_name} · {rm(m.cost)}
                 </div>
                 <div className="text-xs text-slate-400">
                   {new Date(m.date).toLocaleDateString("en-MY", {
+                    timeZone: "Asia/Kuala_Lumpur",
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -93,9 +94,9 @@ export default function MaintenanceManager({
                   @ {km(m.replaced_at_odometer)}
                 </div>
               </div>
-              <form action={deleteMaintenanceLog}>
+              <form action={deleteMaintenanceLog} className="shrink-0">
                 <input type="hidden" name="id" value={m.id} />
-                <button className="text-slate-500 hover:text-red-400" aria-label="Delete maintenance log">
+                <button className="-mr-1 rounded-lg p-2 text-slate-500 hover:text-red-400" aria-label="Delete maintenance log">
                   <Trash2 size={16} />
                 </button>
               </form>

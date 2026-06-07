@@ -53,9 +53,9 @@ export default function Settings({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-base-700 pb-2">
-      <dt className="text-slate-400">{label}</dt>
-      <dd className="font-medium text-slate-200">{value}</dd>
+    <div className="flex items-center justify-between gap-3 border-b border-base-700 pb-2">
+      <dt className="min-w-0 break-words text-slate-400">{label}</dt>
+      <dd className="min-w-0 break-words text-right font-medium text-slate-200">{value}</dd>
     </div>
   );
 }

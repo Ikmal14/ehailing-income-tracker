@@ -37,11 +37,12 @@ export default function ShiftLogger({ shifts }: { shifts: Shift[] }) {
             {recent.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center justify-between py-2 text-sm"
+                className="flex items-center justify-between gap-2 py-2 text-sm"
               >
-                <div>
-                  <div className="text-slate-200">
+                <div className="min-w-0">
+                  <div className="truncate text-slate-200">
                     {new Date(s.shift_start).toLocaleDateString("en-MY", {
+                      timeZone: "Asia/Kuala_Lumpur",
                       day: "2-digit",
                       month: "short",
                     })}{" "}
@@ -51,9 +52,9 @@ export default function ShiftLogger({ shifts }: { shifts: Shift[] }) {
                     {rm(shiftGrossEarnings(s))} gross
                   </div>
                 </div>
-                <form action={deleteShift}>
+                <form action={deleteShift} className="shrink-0">
                   <input type="hidden" name="shift_id" value={s.id} />
-                  <button className="text-slate-500 hover:text-red-400" aria-label="Delete shift">
+                  <button className="-mr-1 rounded-lg p-2 text-slate-500 hover:text-red-400" aria-label="Delete shift">
                     <Trash2 size={16} />
                   </button>
                 </form>
@@ -113,6 +114,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
       <div className="rounded-xl bg-brand/10 px-3 py-2 text-sm text-brand">
         Active shift started{" "}
         {new Date(shift.shift_start).toLocaleString("en-MY", {
+          timeZone: "Asia/Kuala_Lumpur",
           day: "2-digit",
           month: "short",
           hour: "2-digit",
@@ -121,7 +123,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
         @ {km(shift.start_mileage)}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="end_mileage">
             End mileage (km)
@@ -152,7 +154,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
 
       <div>
         <h3 className="label">Earnings by platform (RM)</h3>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {PLATFORMS.map((p) => (
             <div key={p}>
               <label className="mb-1 block text-xs text-slate-400" htmlFor={`platform_${p}`}>

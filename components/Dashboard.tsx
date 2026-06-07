@@ -48,18 +48,18 @@ export default function Dashboard({
     <div className="mx-auto max-w-5xl px-4 pb-28 pt-5 lg:pb-10">
       {/* Header */}
       <header className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15 text-brand">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/15 text-brand">
             <Car size={22} />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-bold leading-tight text-slate-100">
               Bezza Observability
             </h1>
-            <p className="text-xs text-slate-400">{userEmail}</p>
+            <p className="truncate text-xs text-slate-400">{userEmail}</p>
           </div>
         </div>
-        <form action={signOut}>
+        <form action={signOut} className="shrink-0">
           <button className="btn-ghost px-3 py-2" aria-label="Sign out">
             <LogOut size={18} />
           </button>
@@ -122,18 +122,18 @@ export default function Dashboard({
       )}
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-base-700 bg-base-900/95 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-base-700 bg-base-900/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-5xl">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-xs ${
+              className={`flex min-w-0 flex-1 flex-col items-center gap-1 py-2.5 text-xs ${
                 tab === t.key ? "text-brand" : "text-slate-400"
               }`}
             >
               {t.icon}
-              {t.label}
+              <span className="truncate leading-none">{t.label}</span>
             </button>
           ))}
         </div>

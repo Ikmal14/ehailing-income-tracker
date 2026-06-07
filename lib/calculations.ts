@@ -17,20 +17,29 @@ import {
 import type { FuelLog, MaintenanceLog, Shift } from "./types";
 
 /* ------------------------------------------------------------------ */
-/* Date helpers (operate on local calendar months)                     */
+/* Date helpers (operate on Malaysia-time calendar months)             */
 /* ------------------------------------------------------------------ */
+
+/** Malaysia is a fixed UTC+8 offset (no daylight saving). */
+const MYT_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 /** Returns [start, end) boundaries of the calendar month containing `ref`. */
 export function monthBounds(ref: Date): { start: Date; end: Date } {
-  const start = new Date(ref.getFullYear(), ref.getMonth(), 1, 0, 0, 0, 0);
-  const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 1, 0, 0, 0, 0);
+  const m = new Date(ref.getTime() + MYT_OFFSET_MS);
+  const y = m.getUTCFullYear();
+  const mo = m.getUTCMonth();
+  const start = new Date(Date.UTC(y, mo, 1) - MYT_OFFSET_MS);
+  const end = new Date(Date.UTC(y, mo + 1, 1) - MYT_OFFSET_MS);
   return { start, end };
 }
 
 /** Returns [start, end) boundaries of the calendar month before `ref`. */
 export function previousMonthBounds(ref: Date): { start: Date; end: Date } {
-  const start = new Date(ref.getFullYear(), ref.getMonth() - 1, 1, 0, 0, 0, 0);
-  const end = new Date(ref.getFullYear(), ref.getMonth(), 1, 0, 0, 0, 0);
+  const m = new Date(ref.getTime() + MYT_OFFSET_MS);
+  const y = m.getUTCFullYear();
+  const mo = m.getUTCMonth();
+  const start = new Date(Date.UTC(y, mo - 1, 1) - MYT_OFFSET_MS);
+  const end = new Date(Date.UTC(y, mo, 1) - MYT_OFFSET_MS);
   return { start, end };
 }
 
@@ -369,9 +378,9 @@ export interface TimeBlockStat {
   shiftCount: number;
 }
 
-/** Classify a shift into a block by its start hour (local time). */
+/** Classify a shift into a block by its start hour (Malaysia time). */
 export function timeBlockOf(shift: Shift): TimeBlockKey {
-  const h = new Date(shift.shift_start).getHours();
+  const h = new Date(new Date(shift.shift_start).getTime() + MYT_OFFSET_MS).getUTCHours();
   if (h >= 5 && h < 12) return "morning";
   if (h >= 12 && h < 18) return "afternoon";
   return "night";
