@@ -4,13 +4,8 @@ import { Fuel, Trash2 } from "lucide-react";
 import { SectionTitle } from "./ui";
 import { addFuelLog, deleteFuelLog } from "@/app/actions";
 import { km, liters, rm } from "@/lib/calculations";
+import { mytToday } from "@/lib/time";
 import type { FuelLog } from "@/lib/types";
-
-function todayInput(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 export default function FuelManager({ fuelLogs }: { fuelLogs: FuelLog[] }) {
   const recent = fuelLogs.slice(0, 6);
@@ -29,7 +24,7 @@ export default function FuelManager({ fuelLogs }: { fuelLogs: FuelLog[] }) {
               id="fuel_date"
               name="date"
               type="date"
-              defaultValue={todayInput()}
+              defaultValue={mytToday()}
               className="input"
             />
           </div>

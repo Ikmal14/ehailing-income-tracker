@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { mytLocalToIso } from "@/lib/time";
 import type { ShiftEarnings, ShiftExpenses } from "@/lib/types";
 
 async function requireUser() {
@@ -41,7 +42,7 @@ export async function startShift(formData: FormData) {
 
   const { error } = await supabase.from("shifts").insert({
     user_id: user.id,
-    shift_start: startOverride ? new Date(startOverride).toISOString() : new Date().toISOString(),
+    shift_start: startOverride ? mytLocalToIso(startOverride) : new Date().toISOString(),
     start_mileage: startMileage,
     earnings: { platforms: {}, cash_vs_wallet: { cash: 0, wallet: 0 } },
     expenses: { tolls: 0, parking: 0 },
@@ -85,7 +86,7 @@ export async function endShift(formData: FormData) {
   const { error } = await supabase
     .from("shifts")
     .update({
-      shift_end: endOverride ? new Date(endOverride).toISOString() : new Date().toISOString(),
+      shift_end: endOverride ? mytLocalToIso(endOverride) : new Date().toISOString(),
       end_mileage: endMileage,
       earnings,
       expenses,
@@ -132,7 +133,7 @@ export async function addFuelLog(formData: FormData) {
   const dateStr = String(formData.get("date") || "");
   const { error } = await supabase.from("fuel_logs").insert({
     user_id: user.id,
-    date: dateStr ? new Date(dateStr).toISOString() : new Date().toISOString(),
+    date: dateStr ? mytLocalToIso(dateStr) : new Date().toISOString(),
     odometer: num(formData.get("odometer")),
     liters_pumped: num(formData.get("liters_pumped")),
     total_cost: num(formData.get("total_cost")),
@@ -160,7 +161,7 @@ export async function addMaintenanceLog(formData: FormData) {
   const dateStr = String(formData.get("date") || "");
   const { error } = await supabase.from("maintenance_logs").insert({
     user_id: user.id,
-    date: dateStr ? new Date(dateStr).toISOString() : new Date().toISOString(),
+    date: dateStr ? mytLocalToIso(dateStr) : new Date().toISOString(),
     part_name: String(formData.get("part_name") || "").trim(),
     replaced_at_odometer: num(formData.get("replaced_at_odometer")),
     cost: num(formData.get("cost")),

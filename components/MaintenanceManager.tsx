@@ -5,13 +5,8 @@ import { SectionTitle } from "./ui";
 import { addMaintenanceLog, deleteMaintenanceLog } from "@/app/actions";
 import { km, rm } from "@/lib/calculations";
 import { MILESTONES } from "@/lib/constants";
+import { mytToday } from "@/lib/time";
 import type { MaintenanceLog } from "@/lib/types";
-
-function todayInput(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 export default function MaintenanceManager({
   maintenanceLogs,
@@ -54,7 +49,7 @@ export default function MaintenanceManager({
               id="maint_date"
               name="date"
               type="date"
-              defaultValue={todayInput()}
+              defaultValue={mytToday()}
               className="input"
             />
           </div>

@@ -19,15 +19,8 @@ import {
   shiftGrossEarnings,
 } from "@/lib/calculations";
 import { PLATFORMS } from "@/lib/constants";
+import { mytNowDatetimeLocal } from "@/lib/time";
 import type { FuelLog, Shift } from "@/lib/types";
-
-/** Format a Date as a value usable by <input type="datetime-local">. */
-function toLocalInput(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
 
 export default function ShiftLogger({
   shifts,
@@ -208,7 +201,7 @@ function StartShiftForm() {
         <input
           name="shift_start"
           type="datetime-local"
-          defaultValue={toLocalInput(new Date())}
+          defaultValue={mytNowDatetimeLocal()}
           className="input mt-2"
         />
       </details>
@@ -262,7 +255,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
             id="shift_end"
             name="shift_end"
             type="datetime-local"
-            defaultValue={toLocalInput(new Date())}
+            defaultValue={mytNowDatetimeLocal()}
             className="input block"
           />
         </div>
