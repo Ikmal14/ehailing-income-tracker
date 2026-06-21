@@ -91,6 +91,7 @@ export default function Dashboard({
               shifts={shifts}
               maintenanceLogs={maintenanceLogs}
               fuelLogs={fuelLogs}
+              variant="summary"
             />
           </div>
           <Analytics shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
@@ -101,7 +102,9 @@ export default function Dashboard({
         </div>
       )}
 
-      {tab === "shift" && <ShiftLogger shifts={shifts} />}
+      {tab === "shift" && (
+        <ShiftLogger shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
+      )}
 
       {tab === "fuel" && (
         <div className="space-y-4">

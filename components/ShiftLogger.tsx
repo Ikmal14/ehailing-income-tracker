@@ -1,12 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Square, Trash2, Timer, Plus } from "lucide-react";
+import {
+  Play,
+  Square,
+  Trash2,
+  Timer,
+  Plus,
+  ChevronDown,
+} from "lucide-react";
 import { SectionTitle } from "./ui";
 import { startShift, endShift, deleteShift } from "@/app/actions";
-import { km, rm, shiftGrossEarnings } from "@/lib/calculations";
+import {
+  effectiveFuelRate,
+  km,
+  rm,
+  shiftFinancials,
+  shiftGrossEarnings,
+} from "@/lib/calculations";
 import { PLATFORMS } from "@/lib/constants";
-import type { Shift } from "@/lib/types";
+import type { FuelLog, Shift } from "@/lib/types";
 
 /** Format a Date as a value usable by <input type="datetime-local">. */
 function toLocalInput(d: Date): string {
@@ -16,53 +29,156 @@ function toLocalInput(d: Date): string {
   )}:${pad(d.getMinutes())}`;
 }
 
-export default function ShiftLogger({ shifts }: { shifts: Shift[] }) {
+export default function ShiftLogger({
+  shifts,
+  fuelLogs,
+  floatingRate,
+}: {
+  shifts: Shift[];
+  fuelLogs: FuelLog[];
+  floatingRate: number;
+}) {
   const openShift = shifts.find((s) => !s.shift_end);
-  const recent = shifts.filter((s) => s.shift_end).slice(0, 5);
+  const recent = shifts.filter((s) => s.shift_end).slice(0, 10);
+  const rate = effectiveFuelRate(shifts, fuelLogs, floatingRate);
 
   return (
-    <div className="card">
-      <SectionTitle icon={<Timer size={20} />}>Shift Logger</SectionTitle>
-
-      {openShift ? (
-        <EndShiftForm shift={openShift} />
-      ) : (
-        <StartShiftForm />
-      )}
+    <div className="space-y-4">
+      <div className="card">
+        <SectionTitle icon={<Timer size={20} />}>Shift Logger</SectionTitle>
+        {openShift ? <EndShiftForm shift={openShift} /> : <StartShiftForm />}
+      </div>
 
       {recent.length > 0 && (
-        <div className="mt-5">
+        <div className="card">
           <h3 className="label">Recent shifts</h3>
+          <p className="mb-2 text-xs text-slate-500">Tap a shift to see the full breakdown.</p>
           <ul className="divide-y divide-base-700">
             {recent.map((s) => (
-              <li
-                key={s.id}
-                className="flex items-center justify-between gap-2 py-2 text-sm"
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-slate-200">
-                    {new Date(s.shift_start).toLocaleDateString("en-MY", {
-                      timeZone: "Asia/Kuala_Lumpur",
-                      day: "2-digit",
-                      month: "short",
-                    })}{" "}
-                    · {km((s.end_mileage ?? 0) - s.start_mileage)}
-                  </div>
-                  <div className="text-xs text-slate-400">
-                    {rm(shiftGrossEarnings(s))} gross
-                  </div>
-                </div>
-                <form action={deleteShift} className="shrink-0">
-                  <input type="hidden" name="shift_id" value={s.id} />
-                  <button className="-mr-1 rounded-lg p-2 text-slate-500 hover:text-red-400" aria-label="Delete shift">
-                    <Trash2 size={16} />
-                  </button>
-                </form>
-              </li>
+              <RecentShiftItem key={s.id} shift={s} rate={rate} />
             ))}
           </ul>
         </div>
       )}
+    </div>
+  );
+}
+
+function RecentShiftItem({ shift, rate }: { shift: Shift; rate: number }) {
+  const [open, setOpen] = useState(false);
+  const f = shiftFinancials(shift, rate);
+  const kept = f.gross - f.fuelCost - f.serviceAllocation;
+  const platforms = Object.entries(shift.earnings?.platforms ?? {});
+  const cw = shift.earnings?.cash_vs_wallet ?? { cash: 0, wallet: 0 };
+  const startD = new Date(shift.shift_start);
+  const endD = shift.shift_end ? new Date(shift.shift_end) : null;
+  const dateFmt: Intl.DateTimeFormatOptions = {
+    timeZone: "Asia/Kuala_Lumpur",
+    day: "2-digit",
+    month: "short",
+  };
+  const timeFmt: Intl.DateTimeFormatOptions = {
+    timeZone: "Asia/Kuala_Lumpur",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+
+  return (
+    <li className="py-1">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center justify-between gap-2 py-2 text-left"
+        >
+          <div className="min-w-0">
+            <div className="truncate text-sm text-slate-200">
+              {startD.toLocaleDateString("en-MY", dateFmt)} ·{" "}
+              {km(f.distanceKm)} · {f.hours.toFixed(1)}h
+            </div>
+            <div className="text-xs text-slate-400">
+              {rm(kept)} kept · {rm(f.gross)} gross
+            </div>
+          </div>
+          <ChevronDown
+            size={16}
+            className={`shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+        <form action={deleteShift} className="shrink-0">
+          <input type="hidden" name="shift_id" value={shift.id} />
+          <button
+            className="-mr-1 rounded-lg p-2 text-slate-500 hover:text-red-400"
+            aria-label="Delete shift"
+          >
+            <Trash2 size={16} />
+          </button>
+        </form>
+      </div>
+
+      {open && (
+        <div className="mb-2 space-y-3 rounded-xl bg-base-900/60 p-3 text-sm">
+          <div className="text-xs text-slate-400">
+            {startD.toLocaleTimeString("en-MY", timeFmt)}
+            {endD ? ` → ${endD.toLocaleTimeString("en-MY", timeFmt)}` : ""} ·{" "}
+            {km(shift.start_mileage)} → {km(shift.end_mileage ?? shift.start_mileage)}
+          </div>
+
+          {platforms.length > 0 && (
+            <div>
+              <div className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+                Earnings
+              </div>
+              <div className="space-y-1">
+                {platforms.map(([name, amt]) => (
+                  <Row key={name} label={name} value={rm(Number(amt) || 0)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <Row label="Gross" value={rm(f.gross)} strong />
+            <Row label="Fuel" value={`−${rm(f.fuelCost)}`} tone="red" />
+            <Row label="Car service" value={`−${rm(f.serviceAllocation)}`} tone="red" />
+            <div className="border-t border-base-700 pt-1">
+              <Row label="Net kept" value={rm(kept)} tone="green" strong />
+            </div>
+          </div>
+
+          <div className="text-xs text-slate-400">
+            Cash {rm(Number(cw.cash) || 0)} · Wallet {rm(Number(cw.wallet) || 0)} ·
+            Tolls {rm(Number(shift.expenses?.tolls) || 0)} · Parking{" "}
+            {rm(Number(shift.expenses?.parking) || 0)}
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
+
+function Row({
+  label,
+  value,
+  tone,
+  strong,
+}: {
+  label: string;
+  value: string;
+  tone?: "red" | "green";
+  strong?: boolean;
+}) {
+  const color =
+    tone === "red"
+      ? "text-red-400"
+      : tone === "green"
+        ? "text-emerald-400"
+        : "text-slate-200";
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-slate-400">{label}</span>
+      <span className={`${color} ${strong ? "font-semibold" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -124,7 +240,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <label className="label" htmlFor="end_mileage">
             End mileage (km)
           </label>
@@ -138,7 +254,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
             className="input"
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="label" htmlFor="shift_end">
             End time
           </label>
@@ -147,7 +263,7 @@ function EndShiftForm({ shift }: { shift: Shift }) {
             name="shift_end"
             type="datetime-local"
             defaultValue={toLocalInput(new Date())}
-            className="input"
+            className="input block"
           />
         </div>
       </div>
