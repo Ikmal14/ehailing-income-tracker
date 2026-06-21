@@ -85,19 +85,14 @@ export default function Dashboard({
       {/* Content */}
       {tab === "overview" && (
         <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <QuotaWidget shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
-            <SinkingFund
-              shifts={shifts}
-              maintenanceLogs={maintenanceLogs}
-              fuelLogs={fuelLogs}
-              variant="summary"
-            />
-          </div>
+          {/* Order: Income → Net/Hour → Fuel+Service (+chart) → BUDI quota → Car Service Fund */}
           <Analytics shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
-          <Settings
-            floatingRate={rate}
-            onChange={(r) => update({ floatingFuelRate: r })}
+          <QuotaWidget shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
+          <SinkingFund
+            shifts={shifts}
+            maintenanceLogs={maintenanceLogs}
+            fuelLogs={fuelLogs}
+            variant="summary"
           />
         </div>
       )}
@@ -110,6 +105,10 @@ export default function Dashboard({
         <div className="space-y-4">
           <QuotaWidget shifts={shifts} fuelLogs={fuelLogs} floatingRate={rate} />
           <FuelManager fuelLogs={fuelLogs} />
+          <Settings
+            floatingRate={rate}
+            onChange={(r) => update({ floatingFuelRate: r })}
+          />
         </div>
       )}
 
